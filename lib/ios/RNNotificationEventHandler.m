@@ -29,8 +29,12 @@
 }
 
 - (void)didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
-    [_store setActionCompletionHandler:completionHandler withCompletionKey:response.notification.request.identifier];
-    [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
+    NSBlockOperation *notificationResponseOperation = [NSBlockOperation blockOperationWithBlock:^{ 
+        [self->_store setActionCompletionHandler:completionHandler withCompletionKey:response.notification.request.identifier];
+        [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
+    }];
+   
+    [[NSOperationQueue mainQueue] addOperation:notificationResponseOperation];    
 }
 
 - (void)didReceiveBackgroundNotification:(NSDictionary *)userInfo withCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
